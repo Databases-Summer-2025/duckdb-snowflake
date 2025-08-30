@@ -1,6 +1,6 @@
 # name: test/sql/test_list_schemas.test
 # description: Test ListSchemas functionality
-# group: [snowflake]
+# group: [sql]
 
 require snowflake
 

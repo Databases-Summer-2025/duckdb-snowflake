@@ -90,10 +90,10 @@ std::string SnowflakeConfig::ToString() const {
 }
 
 bool SnowflakeConfig::operator==(const SnowflakeConfig &other) const {
-	return (account == other.account && username == other.username &&
-	        password == other.password && warehouse == other.warehouse && database == other.database &&
-	        role == other.role && auth_type == other.auth_type && oauth_token == other.oauth_token &&
-	        private_key == other.private_key && query_timeout == other.query_timeout && keep_alive == other.keep_alive);
+	return (account == other.account && username == other.username && password == other.password &&
+	        warehouse == other.warehouse && database == other.database && role == other.role &&
+	        auth_type == other.auth_type && oauth_token == other.oauth_token && private_key == other.private_key &&
+	        query_timeout == other.query_timeout && keep_alive == other.keep_alive);
 }
 
 } // namespace snowflake

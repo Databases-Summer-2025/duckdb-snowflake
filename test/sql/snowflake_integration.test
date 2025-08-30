@@ -1,6 +1,7 @@
 # name: test/sql/snowflake_integration.test
 # description: Integration test for snowflake extension with real Snowflake connection
-# group: [integration]
+# group: [sql]
+
 # NOTE: This test uses real Snowflake credentials and should not be committed to public repos
 
 # Require statement will ensure this test is run with this extension loaded

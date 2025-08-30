@@ -18,7 +18,7 @@ struct SnowflakeOptions {
 	//! How long (in seconds) to cache Snowflake table metadata.
 	//! A value of 0 disables metadata caching.
 	// uint32_t metadata_cache_ttl_seconds = 3600;
-    
+
 	//! Custom parameters to set on the Snowflake session upon connection.
 	// std::map<string, string> session_parameters;
 };

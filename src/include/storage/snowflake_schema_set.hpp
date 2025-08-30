@@ -8,7 +8,8 @@ namespace duckdb {
 namespace snowflake {
 class SnowflakeSchemaSet : public SnowflakeCatalogSet {
 public:
-	SnowflakeSchemaSet(Catalog &catalog, shared_ptr<SnowflakeClient> client) : SnowflakeCatalogSet(catalog), client(client) {
+	SnowflakeSchemaSet(Catalog &catalog, shared_ptr<SnowflakeClient> client)
+	    : SnowflakeCatalogSet(catalog), client(client) {
 	}
 
 	//! Fetches all schemas from Snowflake and creates SnowflakeSchemaEntry objects for each

@@ -7,8 +7,7 @@ namespace duckdb {
 namespace snowflake {
 
 SnowflakeCatalog::SnowflakeCatalog(AttachedDatabase &db_p, const SnowflakeConfig &config)
-    : Catalog(db_p), client(SnowflakeClientManager::GetInstance().GetConnection(config)),
-      schemas(*this, client) {
+    : Catalog(db_p), client(SnowflakeClientManager::GetInstance().GetConnection(config)), schemas(*this, client) {
 	DPRINT("SnowflakeCatalog constructor called\n");
 	if (!client || !client->IsConnected()) {
 		throw ConnectionException("Failed to connect to Snowflake");

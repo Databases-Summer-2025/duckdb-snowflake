@@ -24,7 +24,6 @@ shared_ptr<SnowflakeClient> SnowflakeClientManager::GetConnection(const Snowflak
 	return connection;
 }
 
-
 void SnowflakeClientManager::ReleaseConnection(const SnowflakeConfig &config) {
 	std::lock_guard<std::mutex> lock(connection_mutex);
 	connections.erase(config);

@@ -22,7 +22,7 @@ struct SnowflakeConfig {
 	bool use_high_precision = false; // When false, DECIMAL(p,0) converts to INT64
 
 	static SnowflakeConfig ParseConnectionString(const std::string &connection_string);
-	
+
 	// Generate connection string from config
 	std::string ToString() const;
 

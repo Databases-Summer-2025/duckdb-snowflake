@@ -1,6 +1,6 @@
-# name: test/sql/test_attach_with_schemas.test  
+# name: test/sql/test_attach_with_schemas.test
 # description: Test attach function that should use ListSchemas
-# group: [snowflake]
+# group: [sql]
 
 require snowflake
 

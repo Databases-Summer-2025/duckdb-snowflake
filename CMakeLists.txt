@@ -10,7 +10,20 @@ include_directories(src/include)
 # Note that it should also be removed from vcpkg.json to prevent needlessly installing it..
 find_package(OpenSSL REQUIRED)
 find_package(Arrow CONFIG REQUIRED)
-find_package(AdbcDriverManager CONFIG REQUIRED)
+
+# ADBC driver manager is not available on Windows/WASM, so make it optional
+if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    find_package(AdbcDriverManager CONFIG)
+    if(NOT AdbcDriverManager_FOUND)
+        message(WARNING "AdbcDriverManager not found on ${CMAKE_SYSTEM_NAME} - Snowflake functionality will be limited")
+        set(ADBC_AVAILABLE FALSE)
+    else()
+        set(ADBC_AVAILABLE TRUE)
+    endif()
+else()
+    find_package(AdbcDriverManager CONFIG REQUIRED)
+    set(ADBC_AVAILABLE TRUE)
+endif()
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
@@ -59,16 +72,20 @@ target_link_libraries(${EXTENSION_NAME}
     OpenSSL::SSL 
     OpenSSL::Crypto
     Arrow::arrow_static
-    AdbcDriverManager::adbc_driver_manager_static
     ${CMAKE_DL_LIBS}
 )
 target_link_libraries(${LOADABLE_EXTENSION_NAME} 
     OpenSSL::SSL 
     OpenSSL::Crypto
     Arrow::arrow_static
-    AdbcDriverManager::adbc_driver_manager_static
     ${CMAKE_DL_LIBS}
 )
+
+# Conditionally link AdbcDriverManager if available
+if(ADBC_AVAILABLE)
+    target_link_libraries(${EXTENSION_NAME} AdbcDriverManager::adbc_driver_manager_static)
+    target_link_libraries(${LOADABLE_EXTENSION_NAME} AdbcDriverManager::adbc_driver_manager_static)
+endif()
 
 # Link filesystem library if needed
 if(NOT APPLE)
@@ -85,6 +102,15 @@ target_compile_definitions(${EXTENSION_NAME} PRIVATE
 target_compile_definitions(${LOADABLE_EXTENSION_NAME} PRIVATE 
     -DSNOWFLAKE_ADBC_LIB="${SNOWFLAKE_ADBC_LIB}"
 )
+
+# Add ADBC availability flag
+if(ADBC_AVAILABLE)
+    target_compile_definitions(${EXTENSION_NAME} PRIVATE -DADBC_AVAILABLE=1)
+    target_compile_definitions(${LOADABLE_EXTENSION_NAME} PRIVATE -DADBC_AVAILABLE=1)
+else()
+    target_compile_definitions(${EXTENSION_NAME} PRIVATE -DADBC_AVAILABLE=0)
+    target_compile_definitions(${LOADABLE_EXTENSION_NAME} PRIVATE -DADBC_AVAILABLE=0)
+endif()
 
 install(
   TARGETS ${EXTENSION_NAME}
