@@ -4,8 +4,8 @@
 
 #include "duckdb/common/exception.hpp"
 #include "duckdb/function/table/arrow.hpp"
+#include "duckdb/function/table/arrow/arrow_duck_schema.hpp"
 #include "duckdb/common/string_util.hpp"
-#include "duckdb/function/table/arrow.hpp"
 
 #include <dlfcn.h>
 #include <filesystem>
@@ -469,13 +469,13 @@ unique_ptr<DataChunk> SnowflakeClient::ExecuteAndGetChunk(ClientContext &context
 	ArrowSchemaWrapper schema_wrapper;
 	schema_wrapper.arrow_schema = schema;
 
-	// TODO: Fix for new DuckDB API
-	// ArrowTableType arrow_table;
-	vector<LogicalType> actual_types;
-	vector<string> actual_names;
-
-	// ArrowTableFunction::PopulateArrowTableType(DBConfig::GetConfig(context), arrow_table, schema_wrapper,
-	// actual_names, 	actual_types);
+	// Use the new DuckDB API to populate the arrow table schema
+	ArrowTableSchema arrow_table;
+	ArrowTableFunction::PopulateArrowTableSchema(DBConfig::GetConfig(context), arrow_table, schema_wrapper.arrow_schema);
+	
+	// Get the column names and types from the arrow table
+	vector<string> &actual_names = arrow_table.GetNames();
+	vector<LogicalType> &actual_types = arrow_table.GetTypes();
 
 	if (actual_types.size() != expected_types.size()) {
 		throw IOException("Schema mismatch: expected " + to_string(expected_types.size()) + " columns but got " +
@@ -532,15 +532,14 @@ unique_ptr<DataChunk> SnowflakeClient::ExecuteAndGetChunk(ClientContext &context
 		DPRINT("Creating ArrowScanLocalState...\n");
 		ArrowScanLocalState local_state(std::move(array_wrapper), context);
 		DPRINT("ArrowScanLocalState initialized\n");
-		// TODO: Fix for new DuckDB API
-		// DPRINT("Arrow table has %zu columns\n", arrow_table.GetColumns().size());
+		DPRINT("Arrow table has %zu columns\n", arrow_table.GetColumns().size());
 
-		// for (size_t i = 0; i < arrow_table.GetColumns().size(); i++) {
-		// 	DPRINT("Column %zu type: %s\n", i, actual_types[i].ToString().c_str());
-		// }
+		for (size_t i = 0; i < actual_types.size(); i++) {
+			DPRINT("Column %zu type: %s\n", i, actual_types[i].ToString().c_str());
+		}
 
 		try {
-			// ArrowTableFunction::ArrowToDuckDB(local_state, arrow_table.GetColumns(), *temp_chunk, batch_count - 1);
+			ArrowTableFunction::ArrowToDuckDB(local_state, arrow_table.GetColumns(), *temp_chunk, batch_count - 1);
 			DPRINT("ArrowToDuckDB completed, chunk size: %zu\n", temp_chunk->size());
 		} catch (const std::exception &e) {
 			DPRINT("ArrowToDuckDB failed: %s\n", e.what());

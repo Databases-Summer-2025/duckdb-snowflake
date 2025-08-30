@@ -19,7 +19,7 @@ struct SnowflakeConfig {
 	std::string private_key;
 	int32_t query_timeout = 300; // seconds
 	bool keep_alive = true;
-	bool use_high_precision = false; // When false, DECIMAL(p,0) converts to INT64
+	bool use_high_precision = true; // When false, DECIMAL(p,0) converts to INT64
 
 	static SnowflakeConfig ParseConnectionString(const std::string &connection_string);
 
