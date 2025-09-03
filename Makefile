@@ -4,64 +4,43 @@ PROJ_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 EXT_NAME=snowflake
 EXT_CONFIG=${PROJ_DIR}extension_config.cmake
 
+# Check if ADBC driver exists before including the main makefile
+ADBC_DRIVER_EXISTS := $(shell test -f adbc_drivers/libadbc_driver_snowflake.so && echo 1 || echo 0)
+ADBC_HEADER_EXISTS := $(shell test -f src/include/arrow-adbc/adbc.h && echo 1 || echo 0)
+
+ifeq ($(ADBC_DRIVER_EXISTS),0)
+$(info ADBC driver not found. Downloading...)
+$(shell bash scripts/download_adbc_driver.sh >/dev/null 2>&1)
+endif
+
+ifeq ($(ADBC_HEADER_EXISTS),0)
+$(info ADBC headers not found. Downloading...)
+$(shell bash scripts/download_adbc_headers.sh >/dev/null 2>&1)
+endif
+
 # Include the Makefile from extension-ci-tools
 include extension-ci-tools/makefiles/duckdb_extension.Makefile
 
-# Arrow ADBC build integration
-build-adbc-release:
-	mkdir -p ./arrow-adbc/c/build && \
-	cd ./arrow-adbc/c && \
-	cmake . -DADBC_DRIVER_SNOWFLAKE=ON -DCMAKE_BUILD_TYPE=Release -B build && \
-	cmake --build build --config Release && \
-	mkdir -p ../../build/release && \
-	find build -name "*.so" -exec cp {} ../../build/release/ \; && \
-	find build -name "*.dylib" -exec cp {} ../../build/release/ \; && \
-	find build -name "*.dll" -exec cp {} ../../build/release/ \;
-	$(MAKE) copy-adbc-to-extension BUILD_TYPE=release
+# Download pre-built ADBC driver and headers if not present
+.PHONY: download-adbc
+download-adbc:
+	@echo "Checking for ADBC Snowflake driver..."
+	@bash scripts/download_adbc_driver.sh
+	@echo "Checking for ADBC headers..."
+	@bash scripts/download_adbc_headers.sh
 
-build-adbc-debug:
-	mkdir -p ./arrow-adbc/c/build-debug && \
-	cd ./arrow-adbc/c && \
-	cmake . -DADBC_DRIVER_SNOWFLAKE=ON -DCMAKE_BUILD_TYPE=Debug -B build-debug && \
-	cmake --build build-debug --config Debug && \
-	mkdir -p ../../build/debug && \
-	find build-debug -name "*.so" -exec cp {} ../../build/debug/ \; && \
-	find build-debug -name "*.dylib" -exec cp {} ../../build/debug/ \; && \
-	find build-debug -name "*.dll" -exec cp {} ../../build/debug/ \;
-	$(MAKE) copy-adbc-to-extension BUILD_TYPE=debug
+# Custom release target that downloads ADBC and builds
+.PHONY: release-build
+release-build: download-adbc
+	mkdir -p build/release
+	cmake -DEXTENSION_STATIC_BUILD=1 -DDUCKDB_EXTENSION_CONFIGS='${PROJ_DIR}extension_config.cmake' \
+		-DCMAKE_BUILD_TYPE=Release -S "./duckdb/" -B build/release
+	cmake --build build/release --config Release
 
-# Common step to copy ADBC driver to extension directory for RUNPATH ($ORIGIN) resolution
-copy-adbc-to-extension:
-	@echo "Copying ADBC driver to extension directory for $(BUILD_TYPE) build..."
-	@mkdir -p build/$(BUILD_TYPE)/extension/snowflake
-	@if [ -f build/$(BUILD_TYPE)/libadbc_driver_snowflake.so ]; then \
-		cp build/$(BUILD_TYPE)/libadbc_driver_snowflake.so build/$(BUILD_TYPE)/extension/snowflake/; \
-		echo "ADBC driver (.so) copied to extension directory"; \
-	elif [ -f build/$(BUILD_TYPE)/libadbc_driver_snowflake.dylib ]; then \
-		cp build/$(BUILD_TYPE)/libadbc_driver_snowflake.dylib build/$(BUILD_TYPE)/extension/snowflake/; \
-		echo "ADBC driver (.dylib) copied to extension directory"; \
-	elif [ -f build/$(BUILD_TYPE)/libadbc_driver_snowflake.dll ]; then \
-		cp build/$(BUILD_TYPE)/libadbc_driver_snowflake.dll build/$(BUILD_TYPE)/extension/snowflake/; \
-		echo "ADBC driver (.dll) copied to extension directory"; \
-	else \
-		echo "Warning: ADBC driver not found in build/$(BUILD_TYPE)/"; \
-	fi
-
-# Custom targets that build ADBC before the standard targets
-release-snowflake: build-adbc-release release
-
-debug-snowflake: build-adbc-debug debug
-
-# Clean ADBC artifacts
-clean-adbc:
-	rm -rf ./arrow-adbc/c/build ./arrow-adbc/c/build-debug
-
-# Extend the clean target
-clean-all: clean clean-adbc
-
-# Make the custom targets the default
-.DEFAULT_GOAL := release-snowflake
-
-# Convenience aliases
-all: release-snowflake
-test: test_release
+# Custom debug target that downloads ADBC and builds  
+.PHONY: debug-build
+debug-build: download-adbc
+	mkdir -p build/debug
+	cmake -DEXTENSION_STATIC_BUILD=1 -DDUCKDB_EXTENSION_CONFIGS='${PROJ_DIR}extension_config.cmake' \
+		-DCMAKE_BUILD_TYPE=Debug -S "./duckdb/" -B build/debug
+	cmake --build build/debug --config Debug
