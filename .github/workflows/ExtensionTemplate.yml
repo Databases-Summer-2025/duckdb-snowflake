@@ -27,9 +27,9 @@ jobs:
         shell: bash
 
     steps:
-      - name: Install Ninja
+      - name: Install build dependencies
         shell: bash
-        run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build
+        run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build flex bison
 
       - uses: actions/checkout@v4
         with:
