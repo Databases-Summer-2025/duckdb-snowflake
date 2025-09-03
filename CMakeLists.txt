@@ -9,7 +9,6 @@ include_directories(src/include)
 # used in cmake with find_package. Feel free to remove or replace with other dependencies.
 # Note that it should also be removed from vcpkg.json to prevent needlessly installing it..
 find_package(OpenSSL REQUIRED)
-find_package(Arrow CONFIG REQUIRED)
 
 # ADBC will be loaded dynamically at runtime
 # Define the expected library name for each platform
@@ -57,13 +56,11 @@ set_property(TARGET ${LOADABLE_EXTENSION_NAME} PROPERTY "EXTENSION_VERSION_SCRIP
 target_link_libraries(${EXTENSION_NAME} 
     OpenSSL::SSL 
     OpenSSL::Crypto
-    Arrow::arrow_static
     ${CMAKE_DL_LIBS}  # For dynamic loading
 )
 target_link_libraries(${LOADABLE_EXTENSION_NAME} 
     OpenSSL::SSL 
     OpenSSL::Crypto
-    Arrow::arrow_static
     ${CMAKE_DL_LIBS}  # For dynamic loading
 )
 
