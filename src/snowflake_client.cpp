@@ -7,8 +7,9 @@
 #include "duckdb/function/table/arrow/arrow_duck_schema.hpp"
 #include "duckdb/common/string_util.hpp"
 
-#include <filesystem>
 #include <dlfcn.h>
+#include <cstring>
+#include <sys/stat.h>
 
 #ifndef SNOWFLAKE_ADBC_LIB
 #define SNOWFLAKE_ADBC_LIB "libadbc_driver_snowflake.so"
@@ -17,13 +18,21 @@
 namespace duckdb {
 namespace snowflake {
 
+// Helper function to check if a file exists
+static bool FileExists(const std::string& path) {
+	struct stat buffer;
+	return (stat(path.c_str(), &buffer) == 0);
+}
+
 // Get the directory where the current extension is located
 static std::string GetExtensionDirectory() {
 	Dl_info info;
 	// Use a function from this library to get its path
 	if (dladdr(reinterpret_cast<void *>(&GetExtensionDirectory), &info)) {
-		std::filesystem::path extension_path(info.dli_fname);
-		std::string dir = extension_path.parent_path().string();
+		std::string path(info.dli_fname);
+		// Find the last directory separator
+		size_t last_sep = path.find_last_of("/\\");
+		std::string dir = (last_sep != std::string::npos) ? path.substr(0, last_sep) : ".";
 
 		DPRINT("GetExtensionDirectory: dli_fname = %s\n", info.dli_fname);
 		DPRINT("GetExtensionDirectory: parent_path = %s\n", dir.c_str());
@@ -93,13 +102,13 @@ void SnowflakeClient::InitializeDatabase(const SnowflakeConfig &config) {
 	
 	// 1. Try the extension directory
 	std::string extension_dir = GetExtensionDirectory();
-	search_paths.push_back((std::filesystem::path(extension_dir) / SNOWFLAKE_ADBC_LIB).string());
+	search_paths.push_back(extension_dir + "/" + SNOWFLAKE_ADBC_LIB);
 	
 	// 2. Try adbc_drivers subdirectory relative to extension
-	search_paths.push_back((std::filesystem::path(extension_dir) / "adbc_drivers" / SNOWFLAKE_ADBC_LIB).string());
+	search_paths.push_back(extension_dir + "/adbc_drivers/" + SNOWFLAKE_ADBC_LIB);
 	
 	// 3. Try the build directory structure
-	search_paths.push_back((std::filesystem::path(extension_dir) / ".." / ".." / ".." / "adbc_drivers" / SNOWFLAKE_ADBC_LIB).string());
+	search_paths.push_back(extension_dir + "/../../../adbc_drivers/" + SNOWFLAKE_ADBC_LIB);
 	
 	// 4. Try system paths
 	search_paths.push_back(std::string("/usr/local/lib/") + SNOWFLAKE_ADBC_LIB);
@@ -112,7 +121,7 @@ void SnowflakeClient::InitializeDatabase(const SnowflakeConfig &config) {
 	std::string driver_path;
 	for (const auto& path : search_paths) {
 		DPRINT("Checking for driver at: %s\n", path.c_str());
-		if (std::filesystem::exists(path)) {
+		if (FileExists(path)) {
 			driver_path = path;
 			DPRINT("Found driver at: %s\n", driver_path.c_str());
 			break;
