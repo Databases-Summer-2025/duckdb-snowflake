@@ -11,15 +11,11 @@
 #include <cstring>
 #include <sys/stat.h>
 
-#ifndef SNOWFLAKE_ADBC_LIB
-#define SNOWFLAKE_ADBC_LIB "libadbc_driver_snowflake.so"
-#endif
-
 namespace duckdb {
 namespace snowflake {
 
 // Helper function to check if a file exists
-static bool FileExists(const std::string& path) {
+static bool FileExists(const std::string &path) {
 	struct stat buffer;
 	return (stat(path.c_str(), &buffer) == 0);
 }
@@ -99,27 +95,27 @@ void SnowflakeClient::InitializeDatabase(const SnowflakeConfig &config) {
 	// Use ADBC driver manager to load the Snowflake driver dynamically
 	// Try multiple locations for the driver
 	std::vector<std::string> search_paths;
-	
+
 	// 1. Try the extension directory
 	std::string extension_dir = GetExtensionDirectory();
 	search_paths.push_back(extension_dir + "/" + SNOWFLAKE_ADBC_LIB);
-	
+
 	// 2. Try adbc_drivers subdirectory relative to extension
 	search_paths.push_back(extension_dir + "/adbc_drivers/" + SNOWFLAKE_ADBC_LIB);
-	
+
 	// 3. Try the build directory structure
 	search_paths.push_back(extension_dir + "/../../../adbc_drivers/" + SNOWFLAKE_ADBC_LIB);
-	
+
 	// 4. Try system paths
 	search_paths.push_back(std::string("/usr/local/lib/") + SNOWFLAKE_ADBC_LIB);
 	search_paths.push_back(std::string("/usr/lib/") + SNOWFLAKE_ADBC_LIB);
-	
+
 	// 5. Try just the filename - let the system search for it
-	search_paths.push_back(SNOWFLAKE_ADBC_LIB);
+	search_paths.emplace_back(SNOWFLAKE_ADBC_LIB);
 
 	// Find the first existing driver
 	std::string driver_path;
-	for (const auto& path : search_paths) {
+	for (const auto &path : search_paths) {
 		DPRINT("Checking for driver at: %s\n", path.c_str());
 		if (FileExists(path)) {
 			driver_path = path;
@@ -127,7 +123,7 @@ void SnowflakeClient::InitializeDatabase(const SnowflakeConfig &config) {
 			break;
 		}
 	}
-	
+
 	if (driver_path.empty()) {
 		// Use the filename and hope it's in the library path
 		driver_path = SNOWFLAKE_ADBC_LIB;
@@ -267,7 +263,7 @@ vector<string> SnowflakeClient::ListTables(ClientContext &context, const string 
 	DPRINT("ListTables called for schema: %s in database: %s\n", schema.c_str(), config.database.c_str());
 	const string upper_schema = StringUtil::Upper(schema);
 	const string table_name_query = "SELECT table_name FROM " + config.database + ".information_schema.tables" +
-	                                (schema != "" ? " WHERE table_schema = '" + upper_schema + "'" : "");
+	                                (!schema.empty() ? " WHERE table_schema = '" + upper_schema + "'" : "");
 	DPRINT("Table query: %s\n", table_name_query.c_str());
 
 	auto result = ExecuteAndGetStrings(context, table_name_query, {"table_name"});
@@ -502,8 +498,9 @@ unique_ptr<DataChunk> SnowflakeClient::ExecuteAndGetChunk(ClientContext &context
 
 	// Use the new DuckDB API to populate the arrow table schema
 	ArrowTableSchema arrow_table;
-	ArrowTableFunction::PopulateArrowTableSchema(DBConfig::GetConfig(context), arrow_table, schema_wrapper.arrow_schema);
-	
+	ArrowTableFunction::PopulateArrowTableSchema(DBConfig::GetConfig(context), arrow_table,
+	                                             schema_wrapper.arrow_schema);
+
 	// Get the column names and types from the arrow table
 	vector<string> &actual_names = arrow_table.GetNames();
 	vector<LogicalType> &actual_types = arrow_table.GetTypes();

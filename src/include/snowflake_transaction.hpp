@@ -11,13 +11,13 @@ namespace snowflake {
 class SnowflakeTransaction : public Transaction {
 public:
 	SnowflakeTransaction(TransactionManager &manager, ClientContext &context);
-	~SnowflakeTransaction() = default;
+	~SnowflakeTransaction() override = default;
 };
 
 class SnowflakeTransactionManager : public TransactionManager {
 public:
 	explicit SnowflakeTransactionManager(AttachedDatabase &db);
-	~SnowflakeTransactionManager() = default;
+	~SnowflakeTransactionManager() override = default;
 
 	Transaction &StartTransaction(ClientContext &context) override;
 	ErrorData CommitTransaction(ClientContext &context, Transaction &transaction) override;

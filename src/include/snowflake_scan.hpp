@@ -10,7 +10,7 @@ struct SnowflakeScanBindData : public ArrowScanFunctionData {
 	// The factory holds the ADBC connection and statement, keeping them alive during the scan
 	unique_ptr<SnowflakeArrowStreamFactory> factory;
 
-	SnowflakeScanBindData(unique_ptr<SnowflakeArrowStreamFactory> factory_p)
+	explicit SnowflakeScanBindData(unique_ptr<SnowflakeArrowStreamFactory> factory_p)
 	    : ArrowScanFunctionData(SnowflakeProduceArrowScan, reinterpret_cast<uintptr_t>(factory_p.get())),
 	      factory(std::move(factory_p)) {
 		// ArrowScanFunctionData constructor takes:

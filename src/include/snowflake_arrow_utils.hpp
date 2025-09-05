@@ -4,6 +4,8 @@
 #include "duckdb/common/arrow/arrow_wrapper.hpp"
 #include "duckdb/function/table/arrow.hpp"
 #include <arrow-adbc/adbc.h>
+
+#include <utility>
 #include "snowflake_client_manager.hpp"
 
 namespace duckdb {
@@ -23,7 +25,7 @@ struct SnowflakeArrowStreamFactory {
 	bool statement_initialized = false;
 
 	SnowflakeArrowStreamFactory(shared_ptr<snowflake::SnowflakeClient> conn, const std::string &query_str)
-	    : connection(conn), query(query_str) {
+	    : connection(std::move(conn)), query(query_str) {
 		std::memset(&statement, 0, sizeof(statement));
 	}
 
