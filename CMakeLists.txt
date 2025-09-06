@@ -57,13 +57,19 @@ set_property(TARGET ${LOADABLE_EXTENSION_NAME} PROPERTY "EXTENSION_VERSION_SCRIP
 target_link_libraries(${EXTENSION_NAME} 
     OpenSSL::SSL 
     OpenSSL::Crypto
-    ${CMAKE_DL_LIBS}  # For dynamic loading
 )
 target_link_libraries(${LOADABLE_EXTENSION_NAME} 
     OpenSSL::SSL 
     OpenSSL::Crypto
-    ${CMAKE_DL_LIBS}  # For dynamic loading
 )
+
+# Add platform-specific libraries for dynamic loading
+if(WIN32)
+    # Windows doesn't need special libraries for dynamic loading (uses Windows API)
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(${EXTENSION_NAME} ${CMAKE_DL_LIBS})
+    target_link_libraries(${LOADABLE_EXTENSION_NAME} ${CMAKE_DL_LIBS})
+endif()
 
 # Link filesystem library if needed (only on Linux/Unix, not Windows or macOS)
 if(NOT APPLE AND NOT WIN32)
