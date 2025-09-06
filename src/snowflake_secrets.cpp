@@ -10,7 +10,6 @@
 #include "duckdb/main/secret/secret_manager.hpp"
 #include "duckdb/main/secret/secret.hpp"
 #include "duckdb/common/types/value.hpp"
-#include <arrow-adbc/adbc.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -162,45 +161,8 @@ bool SnowflakeSecretsHelper::ValidateCredentials(ClientContext &context, const s
 			// Try to get a connection - this will validate the credentials
 			auto connection = client_manager.GetConnection(config);
 
-			// If we got here, connection succeeded - test with a simple query
-			AdbcStatement statement;
-			AdbcError error_obj;
-			std::memset(&error_obj, 0, sizeof(error_obj));
-			std::memset(&statement, 0, sizeof(statement));
-
-			AdbcStatusCode status = AdbcStatementNew(connection->GetConnection(), &statement, &error_obj);
-			if (status != ADBC_STATUS_OK) {
-				if (error_obj.release) {
-					error_obj.release(&error_obj);
-				}
-				return false;
-			}
-
-			// Execute simple test query
-			status = AdbcStatementSetSqlQuery(&statement, "SELECT 1", &error_obj);
-			if (status != ADBC_STATUS_OK) {
-				AdbcStatementRelease(&statement, &error_obj);
-				if (error_obj.release) {
-					error_obj.release(&error_obj);
-				}
-				return false;
-			}
-
-			ArrowArrayStream stream;
-			std::memset(&stream, 0, sizeof(stream));
-			status = AdbcStatementExecuteQuery(&statement, &stream, nullptr, &error_obj);
-			bool success = (status == ADBC_STATUS_OK);
-
-			// Clean up
-			if (stream.release) {
-				stream.release(&stream);
-			}
-			AdbcStatementRelease(&statement, &error_obj);
-			if (error_obj.release) {
-				error_obj.release(&error_obj);
-			}
-
-			return success;
+			// Test the connection
+			return connection->TestConnection();
 		} catch (const IOException &inner_e) {
 			// Connection failed - this is expected for invalid credentials
 			fprintf(stderr, "[Snowflake Validation] Connection test failed for profile\n");
@@ -241,47 +203,8 @@ bool SnowflakeSecretsHelper::ValidateCredentials(ClientContext &context, const s
 			// Try to get a connection - this will validate the credentials
 			auto connection = client_manager.GetConnection(config);
 
-			// If we got here, connection succeeded
-			// Test with a simple query to be sure
-			AdbcStatement statement;
-			AdbcError error_obj;
-			std::memset(&error_obj, 0, sizeof(error_obj));
-			std::memset(&statement, 0, sizeof(statement));
-
-			AdbcStatusCode status = AdbcStatementNew(connection->GetConnection(), &statement, &error_obj);
-			if (status != ADBC_STATUS_OK) {
-				if (error_obj.release) {
-					error_obj.release(&error_obj);
-				}
-				return false;
-			}
-
-			// Prepare and execute simple test query
-			status = AdbcStatementSetSqlQuery(&statement, "SELECT 1", &error_obj);
-			if (status != ADBC_STATUS_OK) {
-				AdbcStatementRelease(&statement, &error_obj);
-				if (error_obj.release) {
-					error_obj.release(&error_obj);
-				}
-				return false;
-			}
-
-			// Execute query
-			ArrowArrayStream stream;
-			std::memset(&stream, 0, sizeof(stream));
-			status = AdbcStatementExecuteQuery(&statement, &stream, nullptr, &error_obj);
-			bool success = (status == ADBC_STATUS_OK);
-
-			// Clean up
-			if (stream.release) {
-				stream.release(&stream);
-			}
-			AdbcStatementRelease(&statement, &error_obj);
-			if (error_obj.release) {
-				error_obj.release(&error_obj);
-			}
-
-			return success;
+			// Test the connection
+			return connection->TestConnection();
 		} catch (const IOException &inner_e) {
 			// Connection failed - this is expected for invalid credentials
 			fprintf(stderr, "[Snowflake Validation] Connection test failed for profile\n");

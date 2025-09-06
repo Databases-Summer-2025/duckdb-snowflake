@@ -37,7 +37,7 @@ void SnowflakeCatalog::ScanSchemas(ClientContext &context, std::function<void(Sc
 optional_ptr<SchemaCatalogEntry> SnowflakeCatalog::LookupSchema(CatalogTransaction transaction,
                                                                 const EntryLookupInfo &schema_lookup,
                                                                 OnEntryNotFound if_not_found) {
-	auto schema_name = schema_lookup.GetEntryName();
+	const auto &schema_name = schema_lookup.GetEntryName();
 
 	auto found_entry = schemas.GetEntry(transaction.GetContext(), schema_name);
 	if (!found_entry && if_not_found == OnEntryNotFound::THROW_EXCEPTION) {

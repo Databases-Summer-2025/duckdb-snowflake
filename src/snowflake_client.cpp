@@ -212,6 +212,52 @@ void SnowflakeClient::InitializeConnection() {
 	CheckError(status, "Failed to initialize connection", &error);
 }
 
+bool SnowflakeClient::TestConnection() {
+	if (!IsConnected()) {
+		return false;
+	}
+
+	// Test the connection with a simple query
+	AdbcStatement statement;
+	AdbcError error_obj;
+	std::memset(&error_obj, 0, sizeof(error_obj));
+	std::memset(&statement, 0, sizeof(statement));
+
+	AdbcStatusCode status = AdbcStatementNew(&connection, &statement, &error_obj);
+	if (status != ADBC_STATUS_OK) {
+		if (error_obj.release) {
+			error_obj.release(&error_obj);
+		}
+		return false;
+	}
+
+	// Execute simple test query
+	status = AdbcStatementSetSqlQuery(&statement, "SELECT 1", &error_obj);
+	if (status != ADBC_STATUS_OK) {
+		AdbcStatementRelease(&statement, &error_obj);
+		if (error_obj.release) {
+			error_obj.release(&error_obj);
+		}
+		return false;
+	}
+
+	ArrowArrayStream stream;
+	std::memset(&stream, 0, sizeof(stream));
+	status = AdbcStatementExecuteQuery(&statement, &stream, nullptr, &error_obj);
+	bool success = (status == ADBC_STATUS_OK);
+
+	// Clean up
+	if (stream.release) {
+		stream.release(&stream);
+	}
+	AdbcStatementRelease(&statement, &error_obj);
+	if (error_obj.release) {
+		error_obj.release(&error_obj);
+	}
+
+	return success;
+}
+
 void SnowflakeClient::CheckError(const AdbcStatusCode status, const std::string &operation, AdbcError *error) {
 	if (status == ADBC_STATUS_OK) {
 		return;

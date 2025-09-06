@@ -43,7 +43,7 @@ class SnowflakeTableEntry : public TableCatalogEntry {
 public:
 	SnowflakeTableEntry(Catalog &catalog, SchemaCatalogEntry &schema, CreateTableInfo &info,
 	                    shared_ptr<SnowflakeClient> client)
-	    : TableCatalogEntry(catalog, schema, info), client(client) {};
+	    : TableCatalogEntry(catalog, schema, info), client(std::move(client)) {};
 
 	string GetFullyQualifiedName() const {
 		return catalog.GetName() + "." + schema.name + "." + name;

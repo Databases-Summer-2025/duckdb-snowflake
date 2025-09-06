@@ -13,7 +13,7 @@ public:
 	// Constructor - connection info
 	SnowflakeCatalog(AttachedDatabase &db_p, const SnowflakeConfig &config);
 
-	~SnowflakeCatalog();
+	~SnowflakeCatalog() override;
 
 	// Required overrides
 	void Initialize(bool load_builtin) override;

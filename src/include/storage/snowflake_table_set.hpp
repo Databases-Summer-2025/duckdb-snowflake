@@ -11,12 +11,12 @@ namespace snowflake {
 class SnowflakeTableSet : public SnowflakeCatalogSet {
 public:
 	SnowflakeTableSet(SnowflakeSchemaEntry &schema, shared_ptr<SnowflakeClient> client, const string &schema_name)
-	    : SnowflakeCatalogSet(schema.catalog), schema(schema), client(client), schema_name(schema_name) {
+	    : SnowflakeCatalogSet(schema.catalog), schema(schema), client(std::move(client)), schema_name(schema_name) {
 	}
 
 protected:
 	//! Load tables for this schema
-	void LoadEntries(ClientContext &context);
+	void LoadEntries(ClientContext &context) override;
 
 private:
 	SnowflakeSchemaEntry &schema;

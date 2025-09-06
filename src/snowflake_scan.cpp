@@ -9,7 +9,6 @@
 #include "snowflake_arrow_utils.hpp"
 #include "snowflake_config.hpp"
 #include "snowflake_secrets.hpp"
-#include <arrow-adbc/adbc.h>
 #include "snowflake_debug.hpp"
 
 namespace duckdb {

@@ -3,8 +3,8 @@
 #include "duckdb.hpp"
 #include "snowflake_config.hpp"
 
-#include <arrow-adbc/adbc.h>
-#include <arrow-adbc/adbc_driver_manager.h>
+#include "../../third_party/arrow-adbc/adbc.h"
+#include "../../third_party/arrow-adbc/adbc_driver_manager.h"
 
 namespace duckdb {
 namespace snowflake {
@@ -23,6 +23,7 @@ public:
 	void Connect(const SnowflakeConfig &config);
 	void Disconnect();
 	bool IsConnected() const;
+	bool TestConnection();
 
 	AdbcConnection *GetConnection() {
 		return &connection;

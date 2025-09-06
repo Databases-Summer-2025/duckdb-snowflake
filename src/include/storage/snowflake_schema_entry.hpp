@@ -14,7 +14,7 @@ class SnowflakeTableSet;
 class SnowflakeSchemaEntry : public SchemaCatalogEntry {
 public:
 	SnowflakeSchemaEntry(Catalog &catalog, const string &schema_name, CreateSchemaInfo &info,
-	                     shared_ptr<SnowflakeClient> client);
+	                     const shared_ptr<SnowflakeClient> &client);
 
 	optional_ptr<CatalogEntry> LookupEntry(CatalogTransaction transaction, const EntryLookupInfo &lookup_info) override;
 
