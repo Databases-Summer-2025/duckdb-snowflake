@@ -7,21 +7,54 @@
 #include "duckdb/function/table/arrow/arrow_duck_schema.hpp"
 #include "duckdb/common/string_util.hpp"
 
-#include <dlfcn.h>
 #include <cstring>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#define access _access
+#else
+#include <dlfcn.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 namespace duckdb {
 namespace snowflake {
 
 // Helper function to check if a file exists
 static bool FileExists(const std::string &path) {
+#ifdef _WIN32
+	return (access(path.c_str(), 0) == 0);
+#else
 	struct stat buffer;
 	return (stat(path.c_str(), &buffer) == 0);
+#endif
 }
 
 // Get the directory where the current extension is located
 static std::string GetExtensionDirectory() {
+#ifdef _WIN32
+	HMODULE hModule = NULL;
+	// Get handle to the module containing this function
+	if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+	                      reinterpret_cast<LPCTSTR>(&GetExtensionDirectory), &hModule)) {
+		char path[MAX_PATH];
+		if (GetModuleFileNameA(hModule, path, sizeof(path))) {
+			std::string full_path(path);
+			// Find the last directory separator
+			size_t last_sep = full_path.find_last_of("/\\");
+			std::string dir = (last_sep != std::string::npos) ? full_path.substr(0, last_sep) : ".";
+			
+			DPRINT("GetExtensionDirectory: module path = %s\n", path);
+			DPRINT("GetExtensionDirectory: parent_path = %s\n", dir.c_str());
+			
+			return dir;
+		}
+	}
+	// Fallback to current directory
+	return ".";
+#else
 	Dl_info info;
 	// Use a function from this library to get its path
 	if (dladdr(reinterpret_cast<void *>(&GetExtensionDirectory), &info)) {
@@ -37,6 +70,7 @@ static std::string GetExtensionDirectory() {
 	}
 	// Fallback to current directory
 	return ".";
+#endif
 }
 
 SnowflakeClient::SnowflakeClient() {
