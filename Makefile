@@ -6,28 +6,20 @@ EXT_CONFIG=${PROJ_DIR}extension_config.cmake
 
 # Check if ADBC driver exists before including the main makefile
 ADBC_DRIVER_EXISTS := $(shell test -f adbc_drivers/libadbc_driver_snowflake.so && echo 1 || echo 0)
-ADBC_HEADER_EXISTS := $(shell test -f src/include/arrow-adbc/adbc.h && echo 1 || echo 0)
 
 ifeq ($(ADBC_DRIVER_EXISTS),0)
 $(info ADBC driver not found. Downloading...)
 $(shell bash scripts/download_adbc_driver.sh >/dev/null 2>&1)
 endif
 
-ifeq ($(ADBC_HEADER_EXISTS),0)
-$(info ADBC headers not found. Downloading...)
-$(shell bash scripts/download_adbc_headers.sh >/dev/null 2>&1)
-endif
-
 # Include the Makefile from extension-ci-tools
 include extension-ci-tools/makefiles/duckdb_extension.Makefile
 
-# Download pre-built ADBC driver and headers if not present
+# Download pre-built ADBC driver if not present
 .PHONY: download-adbc
 download-adbc:
 	@echo "Checking for ADBC Snowflake driver..."
 	@bash scripts/download_adbc_driver.sh
-	@echo "Checking for ADBC headers..."
-	@bash scripts/download_adbc_headers.sh
 
 # Custom release target that downloads ADBC and builds
 .PHONY: release-build
