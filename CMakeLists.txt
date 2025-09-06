@@ -65,8 +65,8 @@ target_link_libraries(${LOADABLE_EXTENSION_NAME}
     ${CMAKE_DL_LIBS}  # For dynamic loading
 )
 
-# Link filesystem library if needed
-if(NOT APPLE)
+# Link filesystem library if needed (only on Linux/Unix, not Windows or macOS)
+if(NOT APPLE AND NOT WIN32)
     target_link_libraries(${EXTENSION_NAME} stdc++fs)
     target_link_libraries(${LOADABLE_EXTENSION_NAME} stdc++fs)
 endif()
