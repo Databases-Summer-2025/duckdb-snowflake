@@ -45,10 +45,10 @@ static std::string GetExtensionDirectory() {
 			// Find the last directory separator
 			size_t last_sep = full_path.find_last_of("/\\");
 			std::string dir = (last_sep != std::string::npos) ? full_path.substr(0, last_sep) : ".";
-			
+
 			DPRINT("GetExtensionDirectory: module path = %s\n", path);
 			DPRINT("GetExtensionDirectory: parent_path = %s\n", dir.c_str());
-			
+
 			return dir;
 		}
 	}
