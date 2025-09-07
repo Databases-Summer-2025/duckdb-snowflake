@@ -3,7 +3,7 @@
 #include "duckdb.hpp"
 #include "duckdb/common/arrow/arrow_wrapper.hpp"
 #include "duckdb/function/table/arrow.hpp"
-#include "../../third_party/arrow-adbc/adbc.h"
+#include "duckdb/common/adbc/adbc.h"
 
 #include <utility>
 #include "snowflake_client_manager.hpp"

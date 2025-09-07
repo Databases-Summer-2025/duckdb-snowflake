@@ -3,8 +3,8 @@
 #include "duckdb.hpp"
 #include "snowflake_config.hpp"
 
-#include "../../third_party/arrow-adbc/adbc.h"
-#include "../../third_party/arrow-adbc/adbc_driver_manager.h"
+#include "duckdb/common/adbc/adbc.h"
+// Note: driver_manager functions are provided by DuckDB's build
 
 namespace duckdb {
 namespace snowflake {
