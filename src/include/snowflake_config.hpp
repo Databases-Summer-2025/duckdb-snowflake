@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <functional>
+#include <cstdint>
 
 namespace duckdb {
 namespace snowflake {
