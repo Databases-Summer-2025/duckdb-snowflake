@@ -1,6 +1,6 @@
 # name: test/sql/snowflake_basic_connectivity.test
 # description: Basic connectivity and setup tests for Snowflake ATTACH functionality
-# group: [sql]
+# group: [sql, snowflake, connectivity, setup]
 
 require snowflake
 
