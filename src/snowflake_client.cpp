@@ -397,37 +397,6 @@ vector<SnowflakeColumn> SnowflakeClient::GetTableInfo(ClientContext &context, co
 	return col_data;
 }
 
-idx_t SnowflakeClient::GetTableRowCount(ClientContext &context, const string &schema, const string &table) {
-	// Special handling for information_schema tables - they don't have row counts
-	if (StringUtil::CIEquals(schema, "information_schema")) {
-		// Return 0 or a default value for information_schema views
-		// These are system views and their row counts are not tracked in INFORMATION_SCHEMA.TABLES
-		return 0;
-	}
-
-	string upper_schema = StringUtil::Upper(schema);
-	string upper_table = StringUtil::Upper(table);
-	
-	string row_count_query = "SELECT row_count FROM " + config.database +
-	                         ".INFORMATION_SCHEMA.TABLES WHERE table_schema = '" + upper_schema + "' AND table_name = '" +
-	                         upper_table + "'";
-	auto chunk = ExecuteAndGetChunk(context, row_count_query, {LogicalType::INTEGER}, {"row_count"});
-
-	if (!chunk || chunk->size() == 0) {
-		// Table not found - could be a view or doesn't exist
-		// Return 0 instead of throwing an error to allow table listing to continue
-		DPRINT("Warning: Could not get row count for table '%s.%s' - may be a view or system table\n", 
-		       schema.c_str(), table.c_str());
-		return 0;
-	}
-
-	// Check if the value is NULL (views have NULL row_count)
-	if (chunk->GetValue(0, 0).IsNull()) {
-		return 0;
-	}
-
-	return chunk->GetValue(0, 0).GetValue<int64_t>();
-}
 
 vector<vector<string>> SnowflakeClient::ExecuteAndGetStrings(ClientContext &context, const string &query,
                                                              const vector<string> &expected_col_names) {
