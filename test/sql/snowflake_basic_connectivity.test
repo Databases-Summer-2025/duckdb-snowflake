@@ -1,6 +1,6 @@
 # name: test/sql/snowflake_basic_connectivity.test
 # description: Basic connectivity and setup tests for Snowflake ATTACH functionality
-# group: [sql]
+# group: [sql, snowflake, connectivity, setup]
 
 require snowflake
 
@@ -63,8 +63,8 @@ TPCH_SF10	SNOWFLAKE_SAMPLE_DATA
 
 # Test 8: Table discovery
 query TT
-SELECT table_name, table_schema FROM sf_db.information_schema.tables
-WHERE table_schema = 'TPCH_SF1' AND table_name IN ('CUSTOMER', 'ORDERS', 'LINEITEM')
+SELECT table_name, table_schema FROM sf_db.information_schema.tables 
+WHERE table_schema = 'TPCH_SF1' AND table_name IN ('CUSTOMER', 'ORDERS', 'LINEITEM') 
 ORDER BY table_name;
 ----
 CUSTOMER	TPCH_SF1
@@ -339,7 +339,7 @@ statement ok
 BEGIN TRANSACTION READ ONLY;
 
 query TT
-SELECT table_name, table_schema FROM sf_db.information_schema.tables
+SELECT table_name, table_schema FROM sf_db.information_schema.tables 
 WHERE table_schema = 'TPCH_SF1' AND table_name IN ('CUSTOMER', 'ORDERS', 'LINEITEM')
 ORDER BY table_name;
 ----
