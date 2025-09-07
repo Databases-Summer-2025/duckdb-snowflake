@@ -397,7 +397,6 @@ vector<SnowflakeColumn> SnowflakeClient::GetTableInfo(ClientContext &context, co
 	return col_data;
 }
 
-
 vector<vector<string>> SnowflakeClient::ExecuteAndGetStrings(ClientContext &context, const string &query,
                                                              const vector<string> &expected_col_names) {
 	if (!connected) {

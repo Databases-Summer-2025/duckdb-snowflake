@@ -1,6 +1,6 @@
 # name: test/sql/snowflake_performance.test
 # description: Performance and stress tests for Snowflake ATTACH functionality
-# group: [sql, snowflake, performance, stress]
+# group: [sql]
 
 require snowflake
 

@@ -1,6 +1,6 @@
 # name: test/sql/snowflake_error_handling.test
 # description: Error handling and read-only restriction tests for Snowflake ATTACH functionality
-# group: [sql, snowflake, error_handling, readonly]
+# group: [sql]
 
 require snowflake
 

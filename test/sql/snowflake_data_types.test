@@ -1,6 +1,6 @@
 # name: test/sql/snowflake_data_types.test
 # description: Data type conversion and edge case tests for Snowflake ATTACH functionality
-# group: [sql, snowflake, data_types, conversion]
+# group: [sql]
 
 require snowflake
 

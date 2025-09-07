@@ -1,6 +1,6 @@
 # name: test/sql/snowflake_read_operations.test
 # description: Comprehensive read operations tests for Snowflake ATTACH functionality
-# group: [sql, snowflake, read_operations]
+# group: [sql]
 
 require snowflake
 
