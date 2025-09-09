@@ -6,7 +6,7 @@
 namespace duckdb {
 namespace snowflake {
 
-enum class SnowflakeAuthType { PASSWORD, OAUTH, KEY_PAIR };
+enum class SnowflakeAuthType { PASSWORD, OAUTH, KEY_PAIR, EXT_BROWSER };
 
 struct SnowflakeConfig {
 	std::string account;

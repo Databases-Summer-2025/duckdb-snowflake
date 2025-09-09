@@ -202,6 +202,10 @@ void SnowflakeClient::InitializeDatabase(const SnowflakeConfig &config) {
 			CheckError(status, "Failed to set private key", &error);
 		}
 		break;
+	case SnowflakeAuthType::EXT_BROWSER:
+		status = AdbcDatabaseSetOption(&database, "adbc.snowflake.sql.auth_type", "auth_ext_browser", &error);
+		CheckError(status, "Failed to set browser auth type", &error);
+		break;
 	}
 
 	// Set optional parameters

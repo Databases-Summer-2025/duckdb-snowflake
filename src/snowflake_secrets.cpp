@@ -65,11 +65,30 @@ snowflake::SnowflakeConfig SnowflakeSecretsHelper::GetCredentials(ClientContext 
 		}
 
 		// Extract all the credential values and build config
-		config.username = snowflake_secret->GetUser();
-		config.password = snowflake_secret->GetPassword();
 		config.account = snowflake_secret->GetAccount();
 		config.warehouse = snowflake_secret->GetWarehouse();
 		config.database = snowflake_secret->GetDatabase();
+		config.role = snowflake_secret->GetRole();
+		
+		// Set auth type and auth-specific fields
+		string auth_type = snowflake_secret->GetAuthType();
+		if (auth_type == "browser" || auth_type == "ext_browser") {
+			config.auth_type = snowflake::SnowflakeAuthType::EXT_BROWSER;
+			config.username = snowflake_secret->GetUsername();
+		} else if (auth_type == "oauth") {
+			config.auth_type = snowflake::SnowflakeAuthType::OAUTH;
+			config.oauth_token = snowflake_secret->GetToken();
+			config.username = snowflake_secret->GetUsername();  // Optional for OAuth
+		} else if (auth_type == "key_pair") {
+			config.auth_type = snowflake::SnowflakeAuthType::KEY_PAIR;
+			config.username = snowflake_secret->GetUser();
+			config.private_key = snowflake_secret->GetPrivateKey();
+		} else {
+			// Default to password auth
+			config.auth_type = snowflake::SnowflakeAuthType::PASSWORD;
+			config.username = snowflake_secret->GetUser();
+			config.password = snowflake_secret->GetPassword();
+		}
 		// Note: schema is not stored in SnowflakeConfig as per the struct definition
 
 	} catch (const std::exception &e) {

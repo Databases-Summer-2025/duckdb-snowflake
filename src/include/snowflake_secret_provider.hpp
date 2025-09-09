@@ -23,6 +23,10 @@ public:
 	string GetWarehouse() const;
 	string GetDatabase() const;
 	string GetSchema() const;
+	string GetAuthType() const;
+	string GetToken() const;
+	string GetPrivateKey() const;
+	string GetRole() const;
 
 	//! Validate that all required fields are present
 	void Validate() const;

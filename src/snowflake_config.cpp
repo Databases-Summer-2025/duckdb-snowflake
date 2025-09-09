@@ -42,6 +42,8 @@ SnowflakeConfig SnowflakeConfig::ParseConnectionString(const std::string &connec
 				config.auth_type = SnowflakeAuthType::OAUTH;
 			} else if (value == "key_pair") {
 				config.auth_type = SnowflakeAuthType::KEY_PAIR;
+			} else if (value == "browser" || value == "ext_browser") {
+				config.auth_type = SnowflakeAuthType::EXT_BROWSER;
 			}
 		} else if (key == "token") {
 			config.oauth_token = value;
@@ -82,6 +84,8 @@ std::string SnowflakeConfig::ToString() const {
 	} else if (auth_type == SnowflakeAuthType::KEY_PAIR) {
 		oss << "auth_type=key_pair;";
 		oss << "private_key=" << private_key << ";";
+	} else if (auth_type == SnowflakeAuthType::EXT_BROWSER) {
+		oss << "auth_type=browser;";
 	}
 	oss << "query_timeout=" << query_timeout << ";";
 	oss << "keep_alive=" << (keep_alive ? "true" : "false") << ";";
